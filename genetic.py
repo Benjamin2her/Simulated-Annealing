@@ -1,76 +1,65 @@
-from typing import List, Callable
-import numpy as np
-# import matplotlib.pyplot as plt
+import random
+from typing import List, Tuple
 
-Genome = List[int]
-Population = List[Genome]
-FitnessFunc = Callable[[Genome], int]
+Genome = List[float]
 
-def fitnessFunction():
-    return 1
+def fitness_function(genome: Genome) -> float:
+    return sum(genome)
 
-# Funcion principal del algoritmo
-def genAlgorithm(popsize : int, genome_len : int, ngenerations : int, selCrossover : int, selMutation : int) -> Population:
-    population = generatePopulation(popsize, genome_len)
+def init_population(population_size: int, genome_len: int) -> List[Genome]:
+    return [
+        [random.randint(0, 1) for _ in range(genome_len)] \
+        for _ in range(population_size)
+    ]
 
-    # Definimos los arreglos auxiliares
-    generations =np.array([])
-    fit =np.array([])
-    f = np.array([])
-    f_mean =np.array([])
-    x=2
+def selection(population: List[List[int]], fitness_fn) -> List[List[int]]:
+    return sorted(population, 
+                  key = fitness_fn, 
+                  reverse = True)[:len(population)//2]
 
-    # Ciclo principal del algoritmo
-    for i in range(ngenerations):
-        if fitnessFunction(population[0]) == 1:
-            break
-        
-        newGeneration = population[0:2]
-        
-        for j in range(0, len(population)-2):
-            
-            # Se hace la seleccion de padres, luego el metodos de cruzamiento y mutacion
-            # se seleccionan padres
-            parents = parentSelection(population, fitnessFunction, 2) 
-            # se hace cruzamiento
-            offspring = crossOver(parents[0], parents[1], ...) 
-            # se muta posterior al cruzmamiento
-            offspring = mutation(offspring)
-            offs
-            newGeneration += [offspring]
-            population = newGeneration
-            population = sortPopulation(population, fitnessFunction)
+def crossover(parent_a: Genome, parent_b: Genome) -> Tuple[Genome, Genome]:
+    point = random.randint(1, len(parent_a) - 1)
+    return  parent_a[:point] + parent_b[point:], \
+            parent_b[:point] + parent_a[point:]
 
-            gens = np.append(gens,i+1)
-            fit = np.append(fit,fitnessFunction(population[0]))
-        
-            for k in range(0,len(population)):
-                f = np.append(f,fitnessFunction(population[k]))
-        
-            f_mean = np.append(f_mean,np.mean(f))
+def mutation(genome: Genome, p: float) -> Genome:
+    return [1 - g if random.random() < p else g for g in genome]
+
+def gen_algorithm(  population_size:   int,
+                    genome_len:        int, 
+                    num_generations:   int,
+                    sel_crossover:   float,
+                    sel_mutation:    float
+                ) -> List[Genome]:
     
-    # Impresion de los resultados en pantalla
+    population = init_population(population_size, genome_len)
 
-    print("\n>====| K - Reinas |====<")
-    print(">---- Tamaño de Genotipo(K):\t\t", genome_len)
-    print(">---- Tamaño de Población:\t\t", popsize)
-    print(">---- Máximo de Generaciones:\t\t", ngenerations)
-    
+    for _ in range(num_generations):
+        parents = selection(population, fitness_function)
 
-    print("\n>====Resultados|====<")
-    if fitnessFunction(population[0]) == 1:
-        print("Se encontró un óptimo en la generación: ", i+1, "✅")
-    else:
-        print("No se encontró un óptimo ❌")
-
-    print("\nMejor Resultado")
-    print("Genotipo:", population[0], "\nFenotipo:")
-    print(genomeToStr(population[0]))
-    best = fitnessFunction(population[0])
-    if best == 1:
-        print("Fitness:", best, "✅\n")
-    else:
-        print("Fitness:", best, "❌\n")
-    
-    
+        for _ in range(num_generations):
+        # Select parents
+            parents = selection(population, fitness_function)
+            # Create new offspring
+            offspring = []
+            for _ in range(population_size // 2):
+                parent_a = random.choice(parents)
+                parent_b = random.choice(parents)
+                offspring_a, offspring_b = crossover(parent_a, parent_b)
+                offspring_a = mutation(offspring_a, sel_mutation)
+                offspring_b = mutation(offspring_b, sel_mutation)
+                offspring.append(offspring_a)
+                offspring.append(offspring_b)
+            # Replace the old population with the new offspring
+            population = offspring
+    # Return the final population
     return population
+
+
+
+
+def main():
+    print("Hola")
+
+if __name__ == '__main__':
+    main()
